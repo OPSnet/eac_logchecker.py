@@ -1,8 +1,9 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import sys
 import argparse
 import contextlib
+import json
 
 CHECKSUM_MIN_VERSION = ('V1.0', 'beta', '1')
 
@@ -13,11 +14,14 @@ def BYTE4(n):
 def BYTE3(n):
     return (n & 0x00FF0000) >> 16
 
+
 def BYTE2(n):
     return (n & 0x0000FF00) >> 8
 
+
 def BYTE1(n):
     return (n & 0x000000FF) >> 0
+
 
 def rotate_right(n):
     return ((n & 0x000000FF) << 24) | (n >> 8)
@@ -94,6 +98,9 @@ def eac_checksum(text):
 
 
 def extract_info(text):
+    if len(text) == 0:
+        return text, None, None
+
     version = text.splitlines()[0]
 
     if not version.startswith('Exact Audio Copy'):
@@ -110,8 +117,12 @@ def extract_info(text):
     return text, version, signature
 
 
-def eac_verify(data):
-    # Log is encoded as Little Endian UTF-16
+def eac_verify(text):
+    unsigned_text, version, old_signature = extract_info(text)
+    return unsigned_text, version, old_signature, eac_checksum(unsigned_text)
+
+
+def get_logs(data):
     text = data.decode('utf-16-le')
 
     # Strip off the BOM
@@ -121,14 +132,12 @@ def eac_verify(data):
     # Null bytes screw it up
     if '\x00' in text:
         text = text[:text.index('\x00')]
-
+    
     # EAC crashes if there are more than 2^14 bytes in a line
     if any(len(l) + 1 > 2**13 for l in text.split('\n')):
         raise RuntimeError('EAC cannot handle lines longer than 2^13 chars')
 
-    unsigned_text, version, old_signature = extract_info(text)
-
-    return unsigned_text, version, old_signature, eac_checksum(unsigned_text)
+    return [x.strip() for x in text.split('-' * 60)]
 
 
 class FixedFileType(argparse.FileType):
@@ -144,57 +153,43 @@ class FixedFileType(argparse.FileType):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Verifies and resigns EAC logs')
-
-    subparsers = parser.add_subparsers(dest='command', required=True)
-
-    verify_parser = subparsers.add_parser('verify', help='verify a log')
-    verify_parser.add_argument('files', type=FixedFileType(mode='rb'), nargs='+', help='input log file(s)')
-
-    sign_parser = subparsers.add_parser('sign', help='sign or fix an existing log')
-    sign_parser.add_argument('--force', action='store_true', help='forces signing even if EAC version is too old')
-    sign_parser.add_argument('input_file', type=FixedFileType(mode='rb'), help='input log file')
-    sign_parser.add_argument('output_file', type=FixedFileType(mode='wb'), help='output log file')
+    parser.add_argument('--json', action='store_true', help='Output as JSON')
+    parser.add_argument('files', type=FixedFileType(mode='rb'), nargs='+', help='input log file(s)')
 
     args = parser.parse_args()
 
-    if args.command == 'sign':
-        with contextlib.closing(args.input_file) as handle:
+    max_length = max(len(f.name) for f in args.files)
+
+    cnt = 1
+    output = {}
+    print('Log Integrity Checker   (C) 2010 by Andre Wiethoff')
+    for file in args.files:
+        prefix = (file.name + ':').ljust(max_length + 2)
+
+        with contextlib.closing(file) as open_file:
+            logs = get_logs(open_file.read())
+        for log in logs:
             try:
-                data, version, old_signature, actual_signature = eac_verify(handle.read())
+                data, version, old_signature, actual_signature = eac_verify(log)
+            except RuntimeError as e:
+                print(prefix, e)
+                continue
             except ValueError as e:
-                print(args.input_file, ': ', e, sep='')
-                sys.exit(1)
-
-        if not args.force and (version is None or version <= CHECKSUM_MIN_VERSION):
-            raise ValueError('EAC version is too old to be signed')
-
-        data += f'\r\n\r\n==== Log checksum {actual_signature} ====\r\n'
-
-        with contextlib.closing(args.output_file or args.input_file) as handle:
-            handle.write(b'\xff\xfe' + data.encode('utf-16le'))
-    elif args.command == 'verify':
-        max_length = max(len(f.name) for f in args.files)
-
-        for file in args.files:
-            prefix = (file.name + ':').ljust(max_length + 2)
-
-            with contextlib.closing(file) as handle:
-                try:
-                    data, version, old_signature, actual_signature = eac_verify(handle.read())
-                except RuntimeError as e:
-                    print(prefix, e)
-                    continue
-                except ValueError as e:
-                    print(prefix, 'Not a log file')
-                    continue
-
-            if version is None:
                 print(prefix, 'Not a log file')
-            elif old_signature is None:
-                print(prefix, 'Log file without a signature')
+                continue
+
+            if version is None or old_signature is None:
+                message = 'Log entry has no checksum!'
             elif old_signature != actual_signature:
-                print(prefix, 'Malformed')
-            elif version <= CHECKSUM_MIN_VERSION:
-                print(prefix, 'Forged')
+                message = 'Log entry was modified, checksum incorrect!'
             else:
-                print(prefix, 'OK')
+                message = 'Log entry is fine!'
+
+            if args.json:
+                output[file.name] = message
+            else:
+                print('{:d}. {:s}'.format(cnt, message))
+            cnt += 1
+
+    if args.json:
+        print(json.dumps(output))
