@@ -2,11 +2,6 @@ language: python
 dist: trusty
 sudo: true
 
-os:
-  - windows
-  - linux
-  - osx
-
 jobs:
   include:
     - python: '3.5'
@@ -24,6 +19,5 @@ deploy:
   password:
     secure: rGBkzH4DOs8Y4AY/J5yJNVGzEabV/cnKhZmh5bN5GxR6H0H/he3/J3+0pXb+omLkXyvcIiQQ/paoIs/TMQ2Ujgvkp1iSVB10OrPmhCZZv6sw3+wkQO2tuiCggHbuYZbOwZFFjaapqIW1RONHCl+qE2hvN7aVfDxbohAyVnsVUYoEGl6kKuPVuMmSBikIyWFO/NuIPYaKUSqTCORty/qfUNTOSp2nQUqg1jQb7WDb3YuBLMVPUSU7XvdswkN2nrlcJwM75AbX7B8SVfkyoVQvkgwhdVLFwTjJmXyHqfpS10CKQt9fM1442yxrI8G7+ss/fvXgaaUN+zZzu8GlPs6mpDhYNnHZ1SOHqznTag87fJFhRxhrjoxomv0m5wPX1iB9eIzqjygfn5bsatNOCPUGEhOPysF7FcchmqTqR02XXOfVhw1+OAHExadGk5ySaWazG3ajNwWQjFXu9mYh5oLZSH7ZsWjB4TiwDsta9P7Db24Y086vF/zHOHNoNf81y9G+ArUUpfZuK4QZSfTHw61+CRT4W1unAGaixDN3THcx6B5rsGuFkN6bXyWtWNT6i1X1p4wQSdIGba+2vp8VMSGENoPDpbBEd2vMl5DDqJd3mA7+nywFnQCfb89lh1Hd/ihY+Qcxag6+L82bf23Y8xULB/d0sbeZUcHf1WfK6HOTLFo=
   on:
-    os: linux
     python: '3.6'
     tags: true
