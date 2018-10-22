@@ -18,7 +18,7 @@ URL = 'https://github.com/OPSnet/eac_logchecker.py'
 EMAIL = 'noreply@orpheus.network'
 AUTHOR = 'OPS'
 REQUIRES_PYTHON = '>=3.5.0'
-VERSION = '0.5.0'
+VERSION = '0.6.0'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
