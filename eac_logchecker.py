@@ -109,7 +109,7 @@ def extract_info(text):
     else:
         version = tuple(version.split()[3:6])
 
-    match = re.search('\r\n\r\n==== (.*) [A-Z0-9]{64} ====', text)
+    match = re.search('\r\n\r\n==== (.*) ([A-Z0-9]+) ====', text)
     if match:
         text, signature_parts = text.split('\r\n\r\n==== {}'.format(match.group(1)), 1)
         signature = signature_parts.split()[0].strip()
