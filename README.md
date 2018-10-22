@@ -1,28 +1,38 @@
-# EAC Log Signer
+# EAC Logchecker
 
-This is a transparent implementation of the Exact Audio Copy log checksum algorithm in Python 3.6+. Includes an option to fix those pesky edited logs.
+This is a transparent implementation of the Exact Audio Copy log checksum algorithm in Python 3.4+.
+
+This is a fork of https://github.com/puddly/eac_logsigner, with modifications to have it
+better match the output of the actual EAC Logchecker to be used in downstream applications.
+
+# Requirements
+
+* Python 3.5+
+
+# Installation
+
+From PyPI:
+
+    $ pip install eac-logchecker
+
+From source:
+
+    $ git clone https://github.com/OPSnet/eac_logchecker.py
+    $ cd eac_logchecker.py
+    $ python setup.py install
 
 # Usage
 
-    usage: eac.py [-h] {verify,sign} ...
+    usage: eac_logchecker [-h] [--json] files [files ...]
 
     Verifies and resigns EAC logs
 
     positional arguments:
-      {verify,sign}
-        verify       verify a log
-        sign         sign or fix an existing log
+    files       input log file(s)
 
     optional arguments:
-      -h, --help     show this help message and exit
-
-# Example
-
-    $ python3 eac.py sign bad.log good.log
-    $ python3 eac.py verify *.log
-    log1.log:  OK
-    log2.log:  OK
-    log3.log:  Malformed
+    -h, --help  show this help message and exit
+    --json      Output as JSON
 
 
 # Overview

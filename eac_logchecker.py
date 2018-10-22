@@ -4,6 +4,7 @@ import sys
 import argparse
 import contextlib
 import json
+import re
 
 CHECKSUM_MIN_VERSION = ('V1.0', 'beta', '1')
 
@@ -108,11 +109,12 @@ def extract_info(text):
     else:
         version = tuple(version.split()[3:6])
 
-    if '\r\n\r\n==== Log checksum' not in text:
-        signature = None
-    else:
-        text, signature_parts = text.split('\r\n\r\n==== Log checksum', 1)
+    match = re.search('\r\n\r\n==== (.*) [A-Z0-9]{64} ====', text)
+    if match:
+        text, signature_parts = text.split('\r\n\r\n==== {}'.format(match.group(1)), 1)
         signature = signature_parts.split()[0].strip()
+    else:
+        signature = None
 
     return text, version, signature
 
@@ -137,7 +139,7 @@ def get_logs(data):
     if any(len(l) + 1 > 2**13 for l in text.split('\n')):
         raise RuntimeError('EAC cannot handle lines longer than 2^13 chars')
 
-    return [x.strip() for x in text.split('-' * 60)]
+    return [x.strip() for x in re.split('^' + ('-' * 60), text)]
 
 
 class FixedFileType(argparse.FileType):
@@ -151,7 +153,8 @@ class FixedFileType(argparse.FileType):
         return file
 
 
-if __name__ == '__main__':
+
+def main():
     parser = argparse.ArgumentParser(description='Verifies and resigns EAC logs')
     parser.add_argument('--json', action='store_true', help='Output as JSON')
     parser.add_argument('files', type=FixedFileType(mode='rb'), nargs='+', help='input log file(s)')
@@ -163,20 +166,24 @@ if __name__ == '__main__':
     cnt = 1
     output = {}
     print('Log Integrity Checker   (C) 2010 by Andre Wiethoff')
+    print('')
     for file in args.files:
         prefix = (file.name + ':').ljust(max_length + 2)
 
         with contextlib.closing(file) as open_file:
-            logs = get_logs(open_file.read())
-        for log in logs:
             try:
-                data, version, old_signature, actual_signature = eac_verify(log)
-            except RuntimeError as e:
-                print(prefix, e)
+                logs = get_logs(open_file.read())
+            except (UnicodeDecodeError, RuntimeError):
+                message = 'Log entry has no checksum!'
+                if args.json:
+                    output[file.name] = message
+                else:
+                    print('{:d}. {:s}'.format(cnt, message))
+                cnt += 1
                 continue
-            except ValueError as e:
-                print(prefix, 'Not a log file')
-                continue
+
+        for log in logs:
+            data, version, old_signature, actual_signature = eac_verify(log)
 
             if version is None or old_signature is None:
                 message = 'Log entry has no checksum!'
@@ -193,3 +200,6 @@ if __name__ == '__main__':
 
     if args.json:
         print(json.dumps(output))
+
+if __name__ == '__main__':
+    main()

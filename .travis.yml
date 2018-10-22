@@ -2,16 +2,28 @@ language: python
 dist: trusty
 sudo: true
 
+os:
+  - windows
+  - linux
+  - osx
+
 jobs:
   include:
-    - python: "3.4"
-    - python: "3.5"
-    - python: "3.6"
-    - python: "3.7"
+    - python: '3.5'
+    - python: '3.6'
+    - python: '3.7'
       dist: xenial
 
-install:
-  - pip install pyinstaller
-
 script:
-  - ./eac_logchecker.py logs/01.log
+  - "./eac_logchecker.py logs/01.log"
+
+deploy:
+  provider: pypi
+  user:
+    secure: Q6jqDZ5DjVhWNk2P0HsXdw9EEqb1tVUiOXR+HCjYZUBPu+ZWrZq8bwrCsGRTRCQRBiLRyUw0MPh/N0yorQgWIogE8qZPscXoGVQVWet+9NuNkTPzmUKfk+XdH3JebD5rX7vPB8mD6CeNJGuVEoiwyG/K0gkpIXDxFDQZ0Dqj0c2WrHvTQNX51pr3w+7vc2A87syDVbQC7Ir6cemnZjZ0UgysYYJbNJEt/Y+IKC+p5CFdYzuuXb11tqDtqXpArl+RggmtcMx+X6SNiv0SQh6qSfoY0QjgDkkikvb3S6w/dIyFhGvwl8fo/+gBKyA/GPY5w2klkErr6f2bn8vDu7cEAdejKbvw/o8rvkPbMQSY3SYjrbRGpoDqS7g1I5+fPwllew9qBFc1I2gA5E/eAI92SeiA0gsbnRCrpOepJ1gAARGZi1VaFl6Vkud1BFBAPob2Dag2pBc5oBR4SLdrr1k8VOZ6vKaqh8lnqEY7NbzL1OUJjbB9Zyl5s53WvYiMC3J3jSCB6hIysnwhpEZ6NWbOnuJCekH/TydvovMn6xwwVw0F0TH7ntpuvWAhzXWmYdKDFkWeAMSzzn9QZ/rEryo/wSdLmAWulODkhUfLJIxyMfj7ocOIjEC/r9H0odb/h8tGETgZ6F8C8Y4cgQQd144Dt/ue4v9ShIjgYT9qfSMTQag=
+  password:
+    secure: rGBkzH4DOs8Y4AY/J5yJNVGzEabV/cnKhZmh5bN5GxR6H0H/he3/J3+0pXb+omLkXyvcIiQQ/paoIs/TMQ2Ujgvkp1iSVB10OrPmhCZZv6sw3+wkQO2tuiCggHbuYZbOwZFFjaapqIW1RONHCl+qE2hvN7aVfDxbohAyVnsVUYoEGl6kKuPVuMmSBikIyWFO/NuIPYaKUSqTCORty/qfUNTOSp2nQUqg1jQb7WDb3YuBLMVPUSU7XvdswkN2nrlcJwM75AbX7B8SVfkyoVQvkgwhdVLFwTjJmXyHqfpS10CKQt9fM1442yxrI8G7+ss/fvXgaaUN+zZzu8GlPs6mpDhYNnHZ1SOHqznTag87fJFhRxhrjoxomv0m5wPX1iB9eIzqjygfn5bsatNOCPUGEhOPysF7FcchmqTqR02XXOfVhw1+OAHExadGk5ySaWazG3ajNwWQjFXu9mYh5oLZSH7ZsWjB4TiwDsta9P7Db24Y086vF/zHOHNoNf81y9G+ArUUpfZuK4QZSfTHw61+CRT4W1unAGaixDN3THcx6B5rsGuFkN6bXyWtWNT6i1X1p4wQSdIGba+2vp8VMSGENoPDpbBEd2vMl5DDqJd3mA7+nywFnQCfb89lh1Hd/ihY+Qcxag6+L82bf23Y8xULB/d0sbeZUcHf1WfK6HOTLFo=
+  on:
+    os: linux
+    python: '3.6'
+    tags: true
