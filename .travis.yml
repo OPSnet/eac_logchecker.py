@@ -10,7 +10,8 @@ jobs:
       dist: xenial
 
 script:
-  - "./eac_logchecker.py logs/01.log"
+  - ./eac_logchecker.py logs/01.log
+  - ./eac_logchecker.py logs/02.log
 
 deploy:
   provider: pypi

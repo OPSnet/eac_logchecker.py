@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import sys
 import argparse
 import contextlib
 import json
@@ -109,9 +108,9 @@ def extract_info(text):
     else:
         version = tuple(version.split()[3:6])
 
-    match = re.search('\r\n\r\n==== (.*) ([A-Z0-9]+) ====', text)
+    match = re.search('\r?\n\r?\n==== (.*) ([A-Z0-9]+) ====', text)
     if match:
-        text, signature_parts = text.split('\r\n\r\n==== {}'.format(match.group(1)), 1)
+        text, signature_parts = re.split('\r?\n\r?\n==== {}'.format(match.group(1)), text)
         signature = signature_parts.split()[0].strip()
     else:
         signature = None
@@ -142,61 +141,53 @@ def get_logs(data):
     return [x.strip() for x in re.split('^' + ('-' * 60), text)]
 
 
-class FixedFileType(argparse.FileType):
-    def __call__(self, string):
-        file = super().__call__(string)
-
-        # Properly handle stdin/stdout with 'b' mode
-        if 'b' in self._mode and file in (sys.stdin, sys.stdout):
-            return file.buffer
-
-        return file
-
-
-
 def main():
     parser = argparse.ArgumentParser(description='Verifies and resigns EAC logs')
     parser.add_argument('--json', action='store_true', help='Output as JSON')
-    parser.add_argument('files', type=FixedFileType(mode='rb'), nargs='+', help='input log file(s)')
+    parser.add_argument('file', type=argparse.FileType(mode='rb'), help='input log file')
 
     args = parser.parse_args()
-
-    max_length = max(len(f.name) for f in args.files)
 
     cnt = 1
     output = {}
     print('Log Integrity Checker   (C) 2010 by Andre Wiethoff')
     print('')
-    for file in args.files:
-        prefix = (file.name + ':').ljust(max_length + 2)
 
-        with contextlib.closing(file) as open_file:
-            try:
-                logs = get_logs(open_file.read())
-            except (UnicodeDecodeError, RuntimeError):
-                message = 'Log entry has no checksum!'
-                if args.json:
-                    output[file.name] = message
-                else:
-                    print('{:d}. {:s}'.format(cnt, message))
-                cnt += 1
-                continue
+    try:
+        with contextlib.closing(args.file) as open_file:
+            logs = get_logs(open_file.read())
 
         for log in logs:
             data, version, old_signature, actual_signature = eac_verify(log)
 
             if version is None or old_signature is None:
                 message = 'Log entry has no checksum!'
+                status = "NO"
             elif old_signature != actual_signature:
                 message = 'Log entry was modified, checksum incorrect!'
+                status = "BAD"
             else:
                 message = 'Log entry is fine!'
+                status = "OK"
 
-            if args.json:
-                output[file.name] = message
-            else:
+            output[cnt] = {
+                "name": args.file.name,
+                "message": message
+            }
+
+            if not args.json:
                 print('{:d}. {:s}'.format(cnt, message))
             cnt += 1
+
+    except (UnicodeDecodeError, RuntimeError):
+        message = 'Log entry has no checksum!'
+        json_output[cnt] = {
+            "name": args.file.name,
+            "message": message,
+            "status": "NO"
+        }
+        if not args.json:
+            print('{:d}. {:s}'.format(cnt, message))
 
     if args.json:
         print(json.dumps(output))
