@@ -49,12 +49,12 @@ def extract_info(text):
     if len(text) == 0:
         return text, None, None
 
-    version = text.splitlines()[0]
-
-    if not version.startswith('Exact Audio Copy'):
-        version = None
-    else:
-        version = tuple(version.split()[3:6])
+    version = None
+    for line in text.splitlines():
+        if line.startswith('Exact Audio Copy'):
+            version = tuple(line.split()[3:6])
+        elif re.match(r'[a-zA-Z]', line):
+            break
 
     match = re.search('\n\n==== (.*) ([A-Z0-9]+) ====', text)
     if match:

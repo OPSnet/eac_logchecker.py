@@ -30,6 +30,8 @@ TESTS = [
     (Path('logs/22.log'), [{'message': 'Log entry has no checksum!', 'status': 'NO'}]),
     (Path('logs/23.log'), [{'message': 'Log entry has no checksum!', 'status': 'NO'}]),
     (Path('logs/24.log'), [{'message': 'Log entry has no checksum!', 'status': 'NO'}]),
+    (Path('logs/25.log'), [{'message': 'Log entry is fine!', 'status': 'OK'}, {'message': 'Log entry has no checksum!', 'status': 'NO'}]),
+    (Path('logs/26.log'), [{'message': 'Log entry was modified, checksum incorrect!', 'status': 'BAD'}])
 ]
 
 class TestLogchecker(unittest.TestCase):
