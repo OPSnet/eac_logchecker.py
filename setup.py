@@ -18,7 +18,7 @@ URL = 'https://github.com/OPSnet/eac_logchecker.py'
 EMAIL = 'noreply@mail.orpheus.network'
 AUTHOR = 'OPS'
 REQUIRES_PYTHON = '>=3.5.0'
-VERSION = '0.7.0'
+VERSION = '0.7.1'
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -84,7 +84,7 @@ setup(
     install_requires=['pprp'],
     license='MIT',
     classifiers=[
-        'Development Status :: 4 - Beta'
+        'Development Status :: 4 - Beta',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',

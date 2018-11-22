@@ -1,13 +1,18 @@
 # EAC Logchecker
 
-This is a transparent implementation of the Exact Audio Copy log checksum algorithm in Python 3.4+.
+![Travis-CI Status](https://img.shields.io/travis/com/OPSnet/eac_logchecker.py/master.svg) 
+![PyPI](https://img.shields.io/pypi/v/eac_logchecker.svg)
+
+This is a transparent implementation of the Exact Audio Copy log checksum algorithm in Python 3.5+.
 
 This is a fork of https://github.com/puddly/eac_logsigner, with modifications to have it
-better match the output of the actual EAC Logchecker to be used in downstream applications.
+better match the output of the actual EAC Logchecker to be used in downstream applications. All
+credit goes to puddly for reverse-engineering the closed source EAC to develop the base.
 
 # Requirements
 
 * Python 3.5+
+* [pprp](http://pypi.org/project/pprp)
 
 # Installation
 
@@ -23,18 +28,41 @@ From source:
 
 # Usage
 
-    usage: eac_logchecker [-h] [--json] files [files ...]
+    usage: eac_logchecker.py [-h] [--json] file
 
     Verifies and resigns EAC logs
 
     positional arguments:
-    files       input log file(s)
+    file        input log file
 
     optional arguments:
     -h, --help  show this help message and exit
     --json      Output as JSON
 
+# Example
 
-# Overview
+    $ eac_logchecker logs/01.log
+    Log Integrity Checker   (C) 2010 by Andre Wiethoff
 
-The algorithm internally uses UTF-16 strings and XORs a refilling 32-byte buffer of characters with the internal state of what looks to be part of AES-256. The code is pretty short, go read it for more info. Open a pull request if you can figure out a way to simplify it.
+    1. Log entry is fine!
+    $ eac_logchecker logs/01.log
+    $ eac_logchecker logs/05.log
+    Log Integrity Checker   (C) 2010 by Andre Wiethoff
+
+    1. Log entry is fine!
+    2. Log entry is fine!
+    $ eac_logchecker --json logs/05.log 
+    [{"message": "Log entry is fine!", "status": "OK"}, {"message": "Log entry is fine!", "status": "OK"}]
+
+# Algorithm
+
+ 1. Strip the log file of newlines and BOMs.
+ 2. Cut off the existing signature block and (re-)encode the log text back into little-endian UTF-16
+ 3. Encrypt the log file with Rijndael-256:
+    - in CBC mode
+    - with a 256-bit block size (most AES implementations hard-code a 128-bit block size)
+    - all-zeroes IV
+    - zero-padding
+    - the hex key `9378716cf13e4265ae55338e940b376184da389e50647726b35f6f341ee3efd9`
+ 4. XOR together all of the resulting 256-bit ciphertext blocks. You can do it byte-by-byte, it doesn't matter in the end.
+ 5. Output the little-endian representation of the above number, in uppercase hex.
