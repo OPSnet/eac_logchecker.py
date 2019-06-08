@@ -82,6 +82,8 @@ setup(
         ]
     },
     install_requires=['pprp'],
+    setup_requires=['pytest-runner'],
+    tests_require=['pytest'],
     license='MIT',
     classifiers=[
         'Development Status :: 4 - Beta',
