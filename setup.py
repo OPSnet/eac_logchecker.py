@@ -9,7 +9,7 @@ import os
 import sys
 from shutil import rmtree
 
-from setuptools import find_packages, setup, Command
+from setuptools import setup, Command
 
 # Package meta-data.
 NAME = 'eac_logchecker'
@@ -18,7 +18,7 @@ URL = 'https://github.com/OPSnet/eac_logchecker.py'
 EMAIL = 'noreply@mail.orpheus.network'
 AUTHOR = 'OPS'
 REQUIRES_PYTHON = '>=3.5.0'
-VERSION = '0.7.1'
+VERSION = '0.8.0'
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -56,7 +56,9 @@ class UploadCommand(Command):
             pass
 
         self.status('Building Source and Wheel (universal) distribution…')
-        os.system('{0} setup.py sdist bdist_wheel --universal'.format(sys.executable))
+        os.system(
+            '{0} setup.py sdist bdist_wheel --universal'.format(sys.executable)
+        )
 
         self.status('Uploading the package to PyPI via Twine…')
         os.system('twine upload dist/*')
