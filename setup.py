@@ -83,7 +83,7 @@ setup(
              'eac_logchecker = eac_logchecker:main'
         ]
     },
-    install_requires=['pprp'],
+    install_requires=['pprp==0.2.6'],
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
     license='MIT',
