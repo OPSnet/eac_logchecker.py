@@ -9,6 +9,8 @@ import pprp
 CHECKSUM_MIN_VERSION = ('V1.0', 'beta', '1')
 EAC_KEY = '9378716cf13e4265ae55338e940b376184da389e50647726b35f6f341ee3efd9'
 
+__version__ = '0.8.1'
+
 
 class Log:
     def __init__(self, text):
@@ -176,6 +178,11 @@ def check_checksum(arg_file):
 def main():
     parser = argparse.ArgumentParser(
         description='Verifies and resigns EAC logs'
+    )
+    parser.add_argument(
+        '--version',
+        action='version',
+        version='%(prog)s ' + __version__
     )
     parser.add_argument('--json', action='store_true', help='Output as JSON')
     parser.add_argument('file', type=Path, help='input log file')
