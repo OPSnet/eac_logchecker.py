@@ -21,8 +21,8 @@ REQUIRES_PYTHON = '>=3.5.0'
 
 setup_dir = Path(__file__).resolve().parent
 version = re.search(
-    r'__version__ = "(.*)"',
-    Path(setup_dir, 'eac_logchecker.py').open().read()
+    r"__version__ = '(.*)'",
+    Path(setup_dir, 'eac_logchecker.py').read_text()
 )
 if version is None:
     raise SystemExit("Could not determine version to use")
