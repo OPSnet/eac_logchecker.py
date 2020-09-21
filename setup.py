@@ -1,11 +1,11 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
 # Note: To use the 'upload' functionality of this file, you must:
 #   $ pip install twine
 
-import io
 import os
+from pathlib import Path
+import re
 import sys
 from shutil import rmtree
 
@@ -18,17 +18,15 @@ URL = 'https://github.com/OPSnet/eac_logchecker.py'
 EMAIL = 'noreply@mail.orpheus.network'
 AUTHOR = 'OPS'
 REQUIRES_PYTHON = '>=3.5.0'
-VERSION = '0.8.0'
 
-here = os.path.abspath(os.path.dirname(__file__))
-
-# Import the README and use it as the long-description.
-# Note: this will only work if 'README.md' is present in your MANIFEST.in file!
-try:
-    with io.open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
-        long_description = '\n' + f.read()
-except FileNotFoundError:
-    long_description = DESCRIPTION
+setup_dir = Path(__file__).resolve().parent
+version = re.search(
+    r'__version__ = "(.*)"',
+    Path(setup_dir, 'eac_logchecker.py').open().read()
+)
+if version is None:
+    raise SystemExit("Could not determine version to use")
+VERSION = version.group(1)
 
 
 class UploadCommand(Command):
@@ -51,7 +49,7 @@ class UploadCommand(Command):
     def run(self):
         try:
             self.status('Removing previous builds…')
-            rmtree(os.path.join(here, 'dist'))
+            rmtree(Path(setup_dir, 'dist'))
         except OSError:
             pass
 
@@ -66,12 +64,11 @@ class UploadCommand(Command):
         sys.exit()
 
 
-# Where the magic happens:
 setup(
     name=NAME,
     version=VERSION,
     description=DESCRIPTION,
-    long_description=long_description,
+    long_description=Path(setup_dir, 'README.md').read_text(),
     long_description_content_type='text/markdown',
     author=AUTHOR,
     author_email=EMAIL,
@@ -88,13 +85,14 @@ setup(
     tests_require=['pytest'],
     license='MIT',
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7'
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
     ],
     # $ setup.py publish support.
     cmdclass={
