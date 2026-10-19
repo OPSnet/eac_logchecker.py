@@ -4,7 +4,8 @@ import argparse
 import json
 from pathlib import Path
 import re
-import pprp
+
+from pprp import crypto
 
 CHECKSUM_MIN_VERSION = ('V1.0', 'beta', '1')
 EAC_KEY = '9378716cf13e4265ae55338e940b376184da389e50647726b35f6f341ee3efd9'
@@ -31,7 +32,7 @@ def eac_checksum(log):
     text = text.replace('\ufeff', '').replace('\ufffe', '')
 
     # Setup Rijndael-256 with a 256-bit blocksize
-    cipher = pprp.crypto_3.rijndael(
+    cipher = crypto.rijndael(
         # Probably SHA256('super secret password') but it doesn't
         # actually matter
         key=bytes.fromhex(EAC_KEY),
@@ -55,7 +56,9 @@ def eac_checksum(log):
         )
 
         # New checksum is the ciphertext.
-        checksum = cipher.encrypt(cbc_plaintext)
+        checksum = bytearray(32)
+        for i, v in enumerate(cipher.encrypt(cbc_plaintext)):
+            checksum[i] = ord(v)
 
     # Textual checksum is just the hex representation
     log.checksum = checksum.hex().upper()
